@@ -1,0 +1,812 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#F1F5FC" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#111933" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="솔리 연습장">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" href="icon-192.png">
+<title>솔리 동요 연습장</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&family=Gowun+Dodum&display=swap">
+<style>
+:root { color-scheme: light; padding-top: env(safe-area-inset-top, 0px); }
+body { margin: 0; font-size: 14px; -webkit-text-size-adjust: 100%; }
+img { max-width: 100%; }
+</style>
+</head>
+<body>
+<style>
+/* Layout: 한 줄 흐름 — 대회 D-day · 솔이와 오늘 요약 · 곡 연습 · 발성 연습 · 집중 시간 · 이번 주 도장 */
+:root {
+  --bg: #F1F5FC;
+  --paper: #FFFFFF;
+  --ink: #1C2747;
+  --muted: #6A7594;
+  --line: #E1E8F5;
+  --sun: #FFC233;
+  --sun-soft: #FFF4D6;
+  --coral: #F2604C;
+  --coral-soft: #FDE7E3;
+  --mint: #1FA58F;
+  --mint-soft: #E0F5F0;
+  --font-display: "Jua", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  --font-body: "Gowun Dodum", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #111933; --paper: #1A2445; --ink: #EEF2FF; --muted: #A4AFD2; --line: #2A3760;
+    --sun: #FFCF55; --sun-soft: #3A3218; --coral: #FF7D6B; --coral-soft: #452630; --mint: #3BD0B8; --mint-soft: #173F45; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #111933; --paper: #1A2445; --ink: #EEF2FF; --muted: #A4AFD2; --line: #2A3760;
+  --sun: #FFCF55; --sun-soft: #3A3218; --coral: #FF7D6B; --coral-soft: #452630; --mint: #3BD0B8; --mint-soft: #173F45; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 16px; line-height: 1.55; }
+.wrap { max-width: 600px; margin: 0 auto; padding-inline: 16px; padding-block: 16px calc(96px + env(safe-area-inset-bottom, 0px)); display: grid; gap: 14px; }
+button, input { touch-action: manipulation; }
+[hidden] { display: none !important; }
+
+/* Bottom tab bar (앱처럼) */
+.tabbar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 40; max-width: 600px; margin: 0 auto; background: var(--paper); border-top: 1px solid var(--line); border-radius: 18px 18px 0 0; box-shadow: 0 -4px 18px rgba(28, 39, 71, .08); padding: 6px 8px calc(6px + env(safe-area-inset-bottom, 0px)); display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; }
+.tabbar button { position: relative; background: none; border: 0; border-radius: 14px; padding: 6px 2px 4px; display: grid; justify-items: center; gap: 1px; color: var(--muted); -webkit-tap-highlight-color: transparent; }
+.tabbar svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.tabbar b { font-family: var(--font-display); font-weight: 400; font-size: .9rem; line-height: 1.2; }
+.tabbar small { font-size: .7rem; line-height: 1.2; font-variant-numeric: tabular-nums; min-height: 1.2em; }
+.tabbar button[aria-current="page"] { color: var(--coral); background: var(--coral-soft); }
+.tabbar button.done small { color: var(--mint); font-weight: 700; }
+.tabbar button.live::after { content: ""; position: absolute; top: 6px; right: 22%; width: 8px; height: 8px; border-radius: 50%; background: var(--coral); animation: pulse 1s infinite; }
+@keyframes pulse { 50% { opacity: .3; } }
+/* 솔이 강화 */
+.mascot svg { position: relative; z-index: 1; }
+.aura { position: absolute; inset: 6% 0 2%; border-radius: 50%; z-index: 0; opacity: 0; transition: opacity .4s; }
+.mascot[data-tier="1"] .aura { opacity: 1; background: radial-gradient(circle, rgba(255, 214, 90, .55), transparent 68%); }
+.mascot[data-tier="2"] .aura { opacity: 1; background: radial-gradient(circle, rgba(255, 194, 51, .8), rgba(255, 194, 51, .15) 55%, transparent 70%); animation: glow 2s ease-in-out infinite; }
+.mascot[data-tier="3"] .aura { opacity: 1; background: radial-gradient(circle, rgba(255, 214, 90, .9), rgba(59, 208, 184, .45) 50%, transparent 70%); animation: glow 1.6s ease-in-out infinite; }
+.mascot[data-tier="4"] .aura { opacity: .85; inset: -4%; background: conic-gradient(#FF7D6B, #FFC233, #3BD0B8, #6C9BFF, #C77DFF, #FF7D6B); filter: blur(12px); animation: spin 4s linear infinite; }
+.power-tag { position: absolute; top: 0; left: -4px; z-index: 2; font-family: var(--font-display); font-size: .85rem; background: var(--coral); color: #fff; padding: 1px 8px 0; border-radius: 99px; }
+.power { display: grid; grid-template-columns: auto 1fr; gap: 10px; align-items: center; background: var(--sun-soft); border-radius: 14px; padding: 10px 12px; }
+.segs { display: flex; gap: 4px; }
+.segs i { width: 22px; height: 10px; border-radius: 99px; background: var(--paper); }
+.segs i.on { background: var(--coral); }
+.power p { font-size: .9rem; line-height: 1.4; word-break: keep-all; }
+.power b { font-family: var(--font-display); font-weight: 400; font-size: 1rem; }
+@keyframes glow { 50% { transform: scale(1.08); opacity: .7; } }
+@keyframes spin { to { transform: rotate(360deg); } }
+button.sum { border: 0; text-align: left; font: inherit; color: inherit; }
+button.sum b { font-family: var(--font-display); }
+h1, h2, h3 { font-family: var(--font-display); font-weight: 400; margin: 0; word-break: keep-all; }
+h2 { font-size: 1.3rem; }
+p { margin: 0; }
+button { font: inherit; color: inherit; cursor: pointer; }
+button:focus-visible, input:focus-visible, summary:focus-visible { outline: 3px solid var(--sun); outline-offset: 2px; }
+.num { font-variant-numeric: tabular-nums; }
+.muted { color: var(--muted); font-size: .9rem; }
+
+.card { background: var(--paper); border-radius: 20px; padding: 18px; display: grid; gap: 14px; min-width: 0; }
+.card-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.btn { border: 0; border-radius: 12px; padding: 9px 16px; font-family: var(--font-display); font-size: 1.05rem; background: var(--bg); }
+.btn.primary { background: var(--coral); color: #fff; }
+.btn.mint { background: var(--mint); color: #fff; }
+.btn.small { padding: 5px 12px; font-size: .95rem; }
+.btn.ghost { background: none; color: var(--muted); font-family: var(--font-body); font-size: .85rem; padding: 4px 8px; }
+.btn.ghost.warn { color: var(--coral); font-weight: 700; }
+.row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.goal-in { width: 3.6em; font: inherit; font-family: var(--font-display); font-size: 1rem; text-align: center; color: var(--ink); background: var(--bg); border: 1.5px solid var(--line); border-radius: 8px; padding: 2px 4px; }
+.bar { height: 10px; background: var(--bg); border-radius: 99px; overflow: hidden; }
+.bar > i { display: block; height: 100%; width: 0; border-radius: 99px; background: var(--mint); transition: width .5s cubic-bezier(.2,.9,.3,1.2); }
+.bar.coral > i { background: var(--coral); }
+.bar.sun > i { background: var(--sun); }
+
+/* Top */
+.top { display: grid; gap: 10px; }
+.top-line { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.top h1 { font-size: 1.15rem; color: var(--coral); }
+.dday { font-family: var(--font-display); font-size: 1.25rem; background: var(--coral); color: #fff; padding: 3px 14px 1px; border-radius: 12px; }
+.event-edit { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; font-size: .9rem; color: var(--muted); }
+.event-edit input { font: inherit; font-size: 16px; color: var(--ink); background: var(--paper); border: 1.5px solid var(--line); border-radius: 8px; padding: 3px 8px; }
+.event-edit input[type=text] { width: 6.5em; }
+
+/* Mascot */
+.mascot-row { display: flex; align-items: center; gap: 14px; }
+.mascot { position: relative; width: 96px; flex: none; background: none; border: 0; padding: 0; border-radius: 20px; }
+.mascot svg { width: 100%; height: auto; display: block; overflow: visible; }
+.mascot .bodyg { transform-box: view-box; transform-origin: 60px 112px; animation: bob 2.4s ease-in-out infinite; }
+.mascot .eyes-open { transform-box: view-box; transform-origin: 60px 62px; animation: blink 4.2s infinite; }
+.mascot .eyes-happy, .mascot .beak-open, .mascot .sweat { display: none; }
+.mascot.happy .eyes-open { display: none; }
+.mascot.happy .eyes-happy { display: inline; }
+.mascot.happy .bodyg { animation: jump .6s ease-out 2; }
+.mascot.sing .beak-closed, .mascot.singing .beak-closed { display: none; }
+.mascot.sing .beak-open, .mascot.singing .beak-open { display: inline; }
+.mascot.singing .bodyg { animation: sway 1.1s ease-in-out infinite; }
+.mascot.oops .bodyg { animation: wobble .5s; }
+.mascot.oops .sweat { display: inline; }
+.acc { display: none; }
+.acc.on { display: inline; }
+.mnote { position: absolute; top: 2px; right: -4px; font-family: serif; color: var(--coral); font-size: 1.4rem; opacity: 0; pointer-events: none; }
+.mascot.sing .mnote, .mascot.singing .mnote { animation: noteUp 1.4s ease-out infinite; }
+.bubble { position: relative; flex: 1; min-width: 0; background: var(--bg); border-radius: 16px; padding: 10px 14px; font-family: var(--font-display); font-size: 1.05rem; line-height: 1.4; word-break: keep-all; }
+.bubble::before { content: ""; position: absolute; left: -9px; top: 50%; margin-top: -8px; border: 8px solid transparent; border-right: 10px solid var(--bg); border-left: 0; }
+.level-line { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.level-line b { font-family: var(--font-display); font-weight: 400; font-size: 1.1rem; }
+.today-sum { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.sum { background: var(--bg); border-radius: 14px; padding: 8px 10px; display: grid; gap: 4px; }
+.sum span { font-size: .8rem; color: var(--muted); }
+.sum b { font-family: var(--font-display); font-weight: 400; font-size: 1.2rem; line-height: 1.1; }
+.sum.done { background: var(--mint-soft); }
+.sum.done b { color: var(--mint); }
+
+/* Songs */
+.song { border-top: 2px dashed var(--line); padding-top: 14px; display: grid; gap: 10px; }
+.song:first-of-type { border-top: 0; padding-top: 0; }
+.song-title { display: flex; gap: 8px; align-items: center; }
+.song-title input { flex: 1; min-width: 0; font-family: var(--font-display); font-size: 1.25rem; color: var(--ink); background: none; border: 0; border-bottom: 2px solid transparent; padding: 2px 0; }
+.song-title input:hover, .song-title input:focus { border-bottom-color: var(--line); outline: none; }
+.song-title input::placeholder { color: var(--muted); opacity: .7; }
+.today-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.count { display: flex; align-items: baseline; gap: 6px; flex-wrap: wrap; }
+.count .big { font-family: var(--font-display); font-size: 2rem; line-height: 1; }
+.dots { display: flex; flex-wrap: wrap; gap: 4px; }
+.dot { width: 14px; height: 14px; border-radius: 50%; background: var(--bg); border: 2px solid var(--line); }
+.dot.on { background: var(--coral); border-color: var(--coral); }
+.dot.on.extra { background: var(--sun); border-color: var(--sun); }
+.goal-box { background: var(--bg); border-radius: 12px; padding: 10px 12px; display: grid; gap: 6px; }
+.goal-line { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; font-size: .9rem; }
+.goal-line b { font-family: var(--font-display); font-weight: 400; font-size: 1.05rem; }
+.tip { font-size: .85rem; color: var(--muted); word-break: keep-all; }
+.goal-box .bar { background: var(--paper); }
+.tip strong { color: var(--coral); font-weight: 700; }
+
+/* Vocal */
+.ex { display: grid; gap: 10px; border-top: 2px dashed var(--line); padding-top: 14px; }
+.ex:first-of-type { border-top: 0; padding-top: 0; }
+.ex h3 { font-size: 1.15rem; }
+.notes { display: flex; flex-wrap: wrap; gap: 5px; }
+.note { min-width: 40px; padding: 5px 4px 4px; border-radius: 10px; background: var(--bg); display: grid; justify-items: center; line-height: 1.2; transition: transform .1s, background .1s; }
+.note b { font-family: var(--font-display); font-weight: 400; font-size: 1.05rem; }
+.note small { font-size: .75rem; color: var(--muted); }
+.note.hit { background: var(--sun); transform: translateY(-3px); }
+.note.hit small { color: var(--ink); }
+
+/* Focus */
+.focus { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.clock { font-family: var(--font-display); font-size: 2.6rem; line-height: 1; }
+.focus-on .clock { color: var(--coral); }
+
+/* Week */
+.week { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; text-align: center; }
+.wd { display: grid; gap: 4px; justify-items: center; font-size: .8rem; color: var(--muted); }
+.stamp { width: 100%; max-width: 44px; aspect-ratio: 1; border-radius: 50%; background: var(--bg); display: grid; place-items: center; font-family: serif; font-size: 1.2rem; color: transparent; }
+.stamp.on { background: var(--sun-soft); color: var(--sun); }
+.stamp.full { background: var(--sun); color: #fff; }
+.stamp.event { background: var(--coral); color: #fff; font-family: var(--font-display); font-size: .8rem; }
+.wd.today { color: var(--ink); font-weight: 700; }
+.medals { display: flex; flex-wrap: wrap; gap: 8px; }
+.medal { width: 40px; height: 40px; border-radius: 50%; background: var(--bg); color: var(--muted); display: grid; place-items: center; font-family: var(--font-display); font-size: .95rem; opacity: .55; }
+.medal.got { background: var(--sun); color: #3A2A00; opacity: 1; }
+
+#confetti { position: fixed; inset: 0; pointer-events: none; z-index: 50; width: 100%; height: 100%; }
+.floater { position: fixed; z-index: 55; font-family: var(--font-display); color: var(--coral); font-size: 1.2rem; pointer-events: none; animation: floatUp 1s ease-out forwards; }
+.sync { font-size: .8rem; color: var(--muted); text-align: center; }
+
+@keyframes floatUp { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(-46px); } }
+@keyframes bob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+@keyframes blink { 0%,92%,100% { transform: scaleY(1); } 95% { transform: scaleY(.1); } }
+@keyframes jump { 0%,100% { transform: translateY(0) scale(1); } 30% { transform: scale(1.08,.9); } 60% { transform: translateY(-14px) scale(.95,1.06); } }
+@keyframes sway { 0%,100% { transform: rotate(-4deg); } 50% { transform: rotate(4deg); } }
+@keyframes wobble { 25% { transform: rotate(-8deg); } 75% { transform: rotate(8deg); } }
+@keyframes noteUp { 0% { opacity: 0; transform: translate(0, 10px); } 20% { opacity: 1; } 100% { opacity: 0; transform: translate(14px, -30px) rotate(15deg); } }
+@media (prefers-reduced-motion: reduce) { *, *::after { animation: none !important; transition: none !important; } }
+@media (max-width: 420px) { .mascot { width: 80px; } .count .big { font-size: 1.7rem; } }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="top-line">
+      <h1>솔리의 동요 연습장</h1>
+      <span class="dday num" id="dday">D-?</span>
+    </div>
+  </header>
+
+  <section class="card" data-tab="today">
+    <div class="mascot-row">
+      <button class="mascot" id="mascot" aria-label="솔이에게 연습 팁 듣기">
+        <span class="aura" aria-hidden="true"></span>
+        <span class="power-tag num" id="powerTag" hidden></span>
+        <svg viewBox="0 0 120 124" aria-hidden="true">
+          <ellipse cx="60" cy="117" rx="30" ry="5" style="fill: var(--line)"></ellipse>
+          <g class="bodyg">
+            <path class="acc" data-min="6" d="M32 52 Q60 40 88 52 L106 108 Q60 120 14 108 Z" fill="#E8505B"></path>
+            <ellipse cx="48" cy="109" rx="9" ry="5" fill="#FF9A3C"></ellipse>
+            <ellipse cx="72" cy="109" rx="9" ry="5" fill="#FF9A3C"></ellipse>
+            <ellipse cx="22" cy="76" rx="9" ry="15" fill="#FFC21A" transform="rotate(25 22 76)"></ellipse>
+            <ellipse cx="98" cy="76" rx="9" ry="15" fill="#FFC21A" transform="rotate(-25 98 76)"></ellipse>
+            <ellipse cx="60" cy="70" rx="40" ry="38" fill="#FFD84D"></ellipse>
+            <ellipse cx="60" cy="86" rx="25" ry="18" fill="#FFF1B8"></ellipse>
+            <g class="acc" data-min="0" data-max="1">
+              <path d="M60 33 Q59 27 60 21" stroke="#3BAA5C" stroke-width="3" fill="none" stroke-linecap="round"></path>
+              <ellipse cx="53" cy="20" rx="7" ry="4" fill="#4CC06E" transform="rotate(-25 53 20)"></ellipse>
+              <ellipse cx="67" cy="20" rx="7" ry="4" fill="#4CC06E" transform="rotate(25 67 20)"></ellipse>
+            </g>
+            <g class="acc" data-min="4" data-max="4">
+              <path d="M23 64 Q22 24 60 24 Q98 24 97 64" fill="none" stroke="#6C5CE7" stroke-width="6" stroke-linecap="round"></path>
+              <rect x="14" y="56" width="13" height="22" rx="6" fill="#6C5CE7"></rect>
+              <rect x="93" y="56" width="13" height="22" rx="6" fill="#6C5CE7"></rect>
+            </g>
+            <polygon class="acc" data-min="2" data-max="4" points="80,30 82.1,35.2 87.6,35.5 83.3,39.1 84.7,44.5 80,41.5 75.3,44.5 76.7,39.1 72.4,35.5 77.9,35.2" fill="#FF6FA5" stroke="#E04E86" stroke-width="1"></polygon>
+            <polygon class="acc" data-min="5" data-max="6" points="46,37 48,22 55,29 60,18 65,29 72,22 74,37" fill="#FFB800" stroke="#D99400" stroke-width="1.5" stroke-linejoin="round"></polygon>
+            <g class="acc" data-min="7">
+              <polygon points="40,39 42,14 52,26 60,8 68,26 78,14 80,39" fill="#FFB800" stroke="#D99400" stroke-width="1.5" stroke-linejoin="round"></polygon>
+              <circle cx="60" cy="31" r="3.5" fill="#E8505B"></circle><circle cx="49" cy="33" r="2.5" fill="#3BD0B8"></circle><circle cx="71" cy="33" r="2.5" fill="#3BD0B8"></circle>
+            </g>
+            <g class="eyes-open">
+              <ellipse cx="46" cy="62" rx="5.5" ry="6.5" fill="#2A2340"></ellipse><ellipse cx="74" cy="62" rx="5.5" ry="6.5" fill="#2A2340"></ellipse>
+              <circle cx="48" cy="59.5" r="2" fill="#FFFFFF"></circle><circle cx="76" cy="59.5" r="2" fill="#FFFFFF"></circle>
+            </g>
+            <g class="eyes-happy" fill="none" stroke="#2A2340" stroke-width="3.2" stroke-linecap="round">
+              <path d="M40 64 Q46 56 52 64"></path><path d="M68 64 Q74 56 80 64"></path>
+            </g>
+            <ellipse cx="35" cy="74" rx="6" ry="3.5" fill="#FF8FA3" opacity=".75"></ellipse>
+            <ellipse cx="85" cy="74" rx="6" ry="3.5" fill="#FF8FA3" opacity=".75"></ellipse>
+            <path class="beak-closed" d="M53 70 Q60 66 67 70 Q60 78 53 70 Z" fill="#FF9A3C"></path>
+            <g class="beak-open"><ellipse cx="60" cy="73" rx="7" ry="7" fill="#FF9A3C"></ellipse><ellipse cx="60" cy="74.5" rx="4.5" ry="4.5" fill="#B5432A"></ellipse></g>
+            <path class="sweat" d="M92 42 Q97 51 92 54 Q87 51 92 42 Z" fill="#7CC6F2"></path>
+            <g class="acc" data-min="1">
+              <path d="M60 97 L47 90 L47 104 Z M60 97 L73 90 L73 104 Z" fill="#E8505B"></path>
+              <circle cx="60" cy="97" r="3.5" fill="#C23B46"></circle>
+            </g>
+            <g class="acc" data-min="3">
+              <rect x="98" y="74" width="5" height="20" rx="2.5" fill="#5A607A" transform="rotate(-20 100 84)"></rect>
+              <circle cx="97" cy="70" r="7.5" fill="#9AA3BF"></circle>
+            </g>
+          </g>
+        </svg>
+        <span class="mnote" aria-hidden="true">♪</span>
+      </button>
+      <p class="bubble" id="bubble" aria-live="polite">솔리야 안녕! 나는 솔이야. 오늘도 같이 노래하자!</p>
+    </div>
+    <div class="level-line">
+      <b id="lvName">Lv.1 새싹 연습생</b>
+      <span class="muted num" id="lvHint"></span>
+    </div>
+    <div class="bar sun"><i id="xpbar"></i></div>
+    <div class="today-sum" aria-label="오늘 목표 요약">
+      <button class="sum" id="sumSong" data-go="song"><span>곡 연습 ›</span><b class="num">0 / 0번</b></button>
+      <button class="sum" id="sumVocal" data-go="vocal"><span>발성 ›</span><b class="num">0 / 0번</b></button>
+      <button class="sum" id="sumFocus" data-go="focus"><span>집중 시간 ›</span><b class="num">0 / 0분</b></button>
+    </div>
+    <div class="power" aria-live="polite">
+      <div class="segs" aria-hidden="true"><i id="seg1"></i><i id="seg2"></i><i id="seg3"></i></div>
+      <p id="powerTxt"></p>
+    </div>
+  </section>
+
+  <section class="card" data-tab="song" aria-labelledby="h-songs">
+    <div class="card-head">
+      <h2 id="h-songs">곡 연습</h2>
+      <span class="muted">한 번 부를 때마다 +1</span>
+    </div>
+    <div id="songs"></div>
+    <div><button class="btn small" id="addSong">+ 곡 추가</button></div>
+  </section>
+
+  <section class="card" data-tab="vocal" aria-labelledby="h-vocal">
+    <div class="card-head">
+      <h2 id="h-vocal">발성 연습</h2>
+      <span class="muted">음을 듣고 따라 해요</span>
+    </div>
+    <div id="vocals"></div>
+  </section>
+
+  <section class="card" data-tab="focus" aria-labelledby="h-focus">
+    <div class="card-head">
+      <h2 id="h-focus">집중 연습 시간</h2>
+      <span class="muted">목표 <input class="goal-in" type="number" id="focusGoal" min="1" max="180" aria-label="오늘 집중 시간 목표(분)"> 분</span>
+    </div>
+    <div class="focus" id="focusBox">
+      <div>
+        <div class="clock num" id="clock">00:00</div>
+        <span class="muted" id="focusSub">오늘 집중한 시간</span>
+      </div>
+      <button class="btn primary" id="focusGo">집중 시작</button>
+    </div>
+    <div class="bar coral"><i id="focusBar"></i></div>
+  </section>
+
+  <section class="card" data-tab="today" aria-labelledby="h-week">
+    <div class="card-head">
+      <h2 id="h-week">이번 주 도장</h2>
+      <span class="muted num" id="medalCount"></span>
+    </div>
+    <div class="week" id="week"></div>
+    <div class="medals" id="medals"></div>
+    <p class="muted">노란 도장은 그날 목표를 모두 채운 날이에요.</p>
+  </section>
+
+  <section class="card" data-tab="today" aria-labelledby="h-event">
+    <h2 id="h-event">대회 설정</h2>
+    <div class="event-edit">
+      <label for="eventName">이름</label>
+      <input type="text" id="eventName" maxlength="12" placeholder="예선">
+      <input type="date" id="eventDate" aria-label="대회 날짜">
+    </div>
+  </section>
+
+  <p class="sync" id="sync">연습 기록은 이 휴대폰에 저장돼요.</p>
+</div>
+
+<nav class="tabbar" aria-label="연습 메뉴">
+  <button data-go="today" id="tabToday"><svg viewBox="0 0 24 24"><path d="M4 11l8-7 8 7v9a1 1 0 0 1-1 1h-4v-6H9v6H5a1 1 0 0 1-1-1z"/></svg><b>오늘</b><small></small></button>
+  <button data-go="song" id="tabSong"><svg viewBox="0 0 24 24"><path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/></svg><b>곡</b><small></small></button>
+  <button data-go="vocal" id="tabVocal"><svg viewBox="0 0 24 24"><path d="M3 12h2M7 8v8M11 5v14M15 9v6M19 11v2"/></svg><b>발성</b><small></small></button>
+  <button data-go="focus" id="tabFocus"><svg viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l3 2M9 2h6"/></svg><b>집중</b><small></small></button>
+</nav>
+
+<canvas id="confetti" aria-hidden="true"></canvas>
+
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const LEVELS = [
+    [0, "새싹 연습생"], [50, "꼬마 가수"], [150, "반짝 가수"], [300, "무대 요정"],
+    [500, "노래 천재"], [800, "동요 스타"], [1200, "솔리 챔피언"], [1800, "전설의 목소리"]
+  ];
+  const GIFTS = ["새싹", "나비넥타이", "별 머리핀", "마이크", "헤드폰", "작은 왕관", "무대 망토", "황금 왕관"];
+  const FREQ = { "도": 261.63, "레": 293.66, "미": 329.63, "파": 349.23, "솔": 392.0 };
+  const VOCALS = [
+    { id: "lip", title: "1. 부르르 입술 떨기", hint: "입술을 가볍게 붙이고 '브르르르' 떨면서 음을 따라가요",
+      notes: ["도", "레", "미", "파", "솔", "파", "미", "레", "도"], sylls: ["브르르", "", "", "", "", "", "", "", ""] },
+    { id: "ah", title: "2. '아'로 하기 · 아에이오우", hint: "먼저 모두 '아'로 한 번, 다음엔 아·에·이·오·우로 한 번",
+      notes: ["도", "미", "솔", "미", "도"], sylls: ["아/아", "아/에", "아/이", "아/오", "아/우"] }
+  ];
+  const TIPS = [
+    "노래하기 전엔 미지근한 물 한 모금!",
+    "어깨 힘을 빼고, 배가 풍선처럼 부풀게 숨 쉬어 봐.",
+    "입술 떨기가 끊기면 볼을 손가락으로 살짝 받쳐 줘.",
+    "높은 음은 소리 지르지 말고 머리 위로 살짝 던지듯이!",
+    "가사 끝 글자까지 또박또박 불러 보자.",
+    "틀려도 멈추지 말고 끝까지! 그게 제일 멋져."
+  ];
+  const CHEERS = ["솔리 최고!", "좋아 솔리, 한 번 더!", "목소리가 점점 반짝여!", "무대가 한 걸음 가까워졌어", "와, 진짜 가수 같아!", "꾸준함이 최고야!"];
+
+  const blank = () => ({
+    v: 2, event: { name: "예선", date: "2026-10-24" },
+    songs: [
+      { id: "song1", title: "", daily: 5, total: 30 },
+      { id: "song2", title: "", daily: 5, total: 30 }
+    ],
+    vocalGoal: { lip: 3, ah: 3 }, focusGoal: 20,
+    xp: 0, days: {}, badges: []
+  });
+  let S = blank();
+  function load(obj) {
+    const b = blank(), s = Object.assign(b, obj || {});
+    if (!s.v || s.v < 2) { // 예전 버전 기록은 경험치와 연습한 날만 이어받아요
+      const old = s; const n = blank(); n.xp = old.xp || 0; n.badges = []; n.days = {};
+      Object.entries(old.days || {}).forEach(([k, d]) => { n.days[k] = { c: {}, sec: d.sec || 0, full: false, bonus: {} }; });
+      if (old.contestDate) n.event.date = old.contestDate;
+      return n;
+    }
+    return s;
+  }
+  try { const raw = localStorage.getItem("soli-practice"); if (raw) S = load(JSON.parse(raw)); } catch (e) {}
+
+  // ---------- storage ----------
+  let dbRef = null, dbTimer = null;
+  function save() {
+    try { localStorage.setItem("soli-practice", JSON.stringify(S)); } catch (e) {}
+    if (dbRef) {
+      clearTimeout(dbTimer);
+      dbTimer = setTimeout(() => { dbRef.set({ state: JSON.stringify(S), updatedAt: Date.now() }).catch(() => {}); }, 900);
+    }
+  }
+  (async () => {
+    try {
+      if (!window.claude || !window.claude.use) return;
+      const [db, user] = await Promise.all([window.claude.use("db"), window.claude.use("user")]);
+      if (!db || !user) return;
+      const id = await user.id();
+      if (!id) return;
+      dbRef = db.doc("data/users/" + id + "/progress");
+      const snap = await dbRef.get();
+      if (snap.exists) {
+        const remote = load(JSON.parse(snap.data().state || "{}"));
+        if (remote.v >= 2 && remote.xp >= S.xp) { S = remote; try { localStorage.setItem("soli-practice", JSON.stringify(S)); } catch (e) {} renderAll(); }
+        else save();
+      } else save();
+      $("sync").textContent = "연습 기록은 내 계정에 저장돼요.";
+    } catch (e) {}
+  })();
+
+  // ---------- dates & counts ----------
+  const pad = (n) => String(n).padStart(2, "0");
+  const keyOf = (d) => d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate());
+  const todayKey = () => keyOf(new Date());
+  const day = (k) => { const d = (S.days[k] = S.days[k] || {}); d.c = d.c || {}; d.sec = d.sec || 0; d.bonus = d.bonus || {}; return d; };
+  const peek = (k) => S.days[k] || { c: {}, sec: 0, bonus: {} };
+  const cnt = (k, id) => (peek(k).c || {})[id] || 0;
+  const active = (k) => { const d = peek(k); return Object.values(d.c || {}).some((n) => n > 0) || (d.sec || 0) >= 60; };
+  function daysLeft() { // 오늘 포함, 대회 전날까지 연습할 수 있는 날 수
+    if (!S.event.date) return null;
+    const t = new Date(S.event.date + "T00:00:00"), now = new Date(); now.setHours(0, 0, 0, 0);
+    return Math.round((t - now) / 86400000);
+  }
+  function songTotal(id) {
+    return Object.entries(S.days).reduce((a, [k, d]) => a + (!S.event.date || k <= S.event.date ? ((d.c || {})[id] || 0) : 0), 0);
+  }
+  function streak() {
+    const d = new Date(); let n = 0;
+    if (!active(keyOf(d))) d.setDate(d.getDate() - 1);
+    while (active(keyOf(d))) { n++; d.setDate(d.getDate() - 1); }
+    return n;
+  }
+  // 강화: 목표를 모두 채운 날마다 +1, 연속 완주는 콤보
+  const POWER_NAMES = ["기본 목소리", "반짝 목소리", "맑은 목소리", "빛나는 목소리", "무지개 목소리"];
+  const powerLv = () => Object.values(S.days).filter((d) => d.full).length;
+  const tierOf = (p) => (p >= 10 ? 4 : p >= 5 ? 3 : p >= 3 ? 2 : p >= 1 ? 1 : 0);
+  const TIER_AT = [1, 3, 5, 10];
+  function fullStreak() {
+    const d = new Date(); let n = 0;
+    if (!peek(keyOf(d)).full) d.setDate(d.getDate() - 1);
+    while (peek(keyOf(d)).full) { n++; d.setDate(d.getDate() - 1); }
+    return n;
+  }
+  const allReps = () => Object.values(S.days).reduce((a, d) => a + S.songs.reduce((b, s) => b + ((d.c || {})[s.id] || 0), 0), 0);
+  const totalFocusMin = () => Math.floor(Object.values(S.days).reduce((a, d) => a + (d.sec || 0), 0) / 60);
+
+  // ---------- mascot ----------
+  const mascot = $("mascot"); let moodT = null;
+  function say(text, mood) {
+    $("bubble").textContent = text;
+    mascot.classList.remove("happy", "sing", "oops"); void mascot.offsetWidth;
+    if (mood) { mascot.classList.add(mood); clearTimeout(moodT); moodT = setTimeout(() => mascot.classList.remove(mood), 1500); }
+  }
+  mascot.addEventListener("click", () => say(TIPS[Math.floor(Math.random() * TIPS.length)], "happy"));
+
+  // ---------- xp ----------
+  function levelOf(xp) { let i = 0; while (i + 1 < LEVELS.length && xp >= LEVELS[i + 1][0]) i++; return i; }
+  function addXP(n, msg, el) {
+    const before = levelOf(S.xp);
+    S.xp = Math.max(0, S.xp + n);
+    if (el && n > 0) floater("+" + n, el);
+    const after = levelOf(S.xp);
+    if (after > before) { confetti(150); say("레벨 업! 이제 " + LEVELS[after][1] + "! 선물로 " + GIFTS[after] + " 받았어!", "happy"); }
+    else if (msg) say(msg, "happy");
+  }
+
+  // ---------- today goals ----------
+  function todayStatus() {
+    const k = todayKey();
+    const songDone = S.songs.reduce((a, s) => a + Math.min(cnt(k, s.id), s.daily), 0);
+    const songGoal = S.songs.reduce((a, s) => a + s.daily, 0);
+    const songRaw = S.songs.reduce((a, s) => a + cnt(k, s.id), 0);
+    const vDone = VOCALS.reduce((a, v) => a + Math.min(cnt(k, v.id), S.vocalGoal[v.id]), 0);
+    const vRaw = VOCALS.reduce((a, v) => a + cnt(k, v.id), 0);
+    const vGoal = VOCALS.reduce((a, v) => a + S.vocalGoal[v.id], 0);
+    const fMin = Math.floor(peek(k).sec / 60);
+    return { songDone, songGoal, songRaw, vDone, vRaw, vGoal, fMin, all: songDone >= songGoal && vDone >= vGoal && fMin >= S.focusGoal };
+  }
+  function checkGoals(el) {
+    const k = todayKey(), d = day(k);
+    S.songs.forEach((s) => {
+      if (!d.bonus[s.id] && cnt(k, s.id) >= s.daily) { d.bonus[s.id] = 1; addXP(15, "'" + (s.title || "이 곡") + "' 오늘 목표 " + s.daily + "번 완료!", el); confetti(60); }
+      if (!d.bonus["t_" + s.id] && songTotal(s.id) >= s.total && s.total > 0) { d.bonus["t_" + s.id] = 1; addXP(40, (S.event.name || "대회") + "까지 목표 " + s.total + "번 달성! 대단해!", el); confetti(140); }
+    });
+    VOCALS.forEach((v) => { if (!d.bonus[v.id] && cnt(k, v.id) >= S.vocalGoal[v.id]) { d.bonus[v.id] = 1; addXP(10, "발성 '" + v.title.slice(3) + "' 오늘 목표 완료!", el); } });
+    if (!d.bonus.focus && d.sec >= S.focusGoal * 60) { d.bonus.focus = 1; addXP(15, "집중 " + S.focusGoal + "분 달성! 최고야!", el); confetti(60); }
+    if (!d.full && todayStatus().all) {
+      d.full = true;
+      const p = powerLv(), c = fullStreak();
+      addXP(30 + 10 * Math.min(c - 1, 5), null, el); confetti(220);
+      say("솔이 목소리 강화 +" + p + " 성공! 솔리 덕분이야!" + (c >= 2 ? " 연속 " + c + "일 완주 콤보!" : ""), "happy");
+    }
+    checkBadges();
+  }
+  function bump(id, delta, xp, el) {
+    const d = day(todayKey());
+    const cur = d.c[id] || 0;
+    if (delta < 0 && cur === 0) return;
+    d.c[id] = cur + delta;
+    if (delta > 0) { addXP(xp, CHEERS[Math.floor(Math.random() * CHEERS.length)], el); checkGoals(el); }
+    else S.xp = Math.max(0, S.xp - xp);
+    save(); renderAll(false);
+  }
+
+  // ---------- render: top ----------
+  function renderTop() {
+    const i = levelOf(S.xp), cur = LEVELS[i][0], next = LEVELS[i + 1];
+    $("lvName").textContent = "Lv." + (i + 1) + " " + LEVELS[i][1];
+    $("xpbar").style.width = (next ? Math.round(((S.xp - cur) / (next[0] - cur)) * 100) : 100) + "%";
+    $("lvHint").textContent = (next ? "솔이 선물(" + GIFTS[i + 1] + ")까지 " + (next[0] - S.xp) + " XP" : "최고 단계!") + " · 연속 " + streak() + "일";
+    document.querySelectorAll("#mascot .acc").forEach((a) => {
+      const mn = +a.dataset.min, mx = a.dataset.max ? +a.dataset.max : 99;
+      a.classList.toggle("on", i >= mn && i <= mx);
+    });
+    if (document.activeElement !== $("eventName")) $("eventName").value = S.event.name;
+    $("eventDate").value = S.event.date || "";
+    const dl = daysLeft(), nm = S.event.name || "대회";
+    $("dday").textContent = dl === null ? nm + " D-?" : dl > 0 ? nm + " D-" + dl : dl === 0 ? nm + " D-DAY" : nm + " 끝!";
+    const t = todayStatus();
+    const sum = (id, done, goal, unit, raw) => {
+      const el = $(id); el.classList.toggle("done", goal > 0 && done >= goal);
+      el.querySelector("b").textContent = raw + " / " + goal + unit;
+    };
+    sum("sumSong", t.songDone, t.songGoal, "번", t.songRaw);
+    sum("sumVocal", t.vDone, t.vGoal, "번", t.vRaw);
+    sum("sumFocus", t.fMin, S.focusGoal, "분", t.fMin);
+    const p = powerLv(), tier = tierOf(p), combo = fullStreak();
+    mascot.dataset.tier = tier;
+    $("powerTag").hidden = p === 0; $("powerTag").textContent = "+" + p;
+    $("seg1").classList.toggle("on", t.songGoal > 0 && t.songDone >= t.songGoal);
+    $("seg2").classList.toggle("on", t.vDone >= t.vGoal);
+    $("seg3").classList.toggle("on", t.fMin >= S.focusGoal);
+    const nextTier = TIER_AT.find((x) => x > p);
+    $("powerTxt").innerHTML = "";
+    const head = document.createElement("b"); head.textContent = "솔이 강화 +" + p + " · " + POWER_NAMES[tier];
+    const sub = document.createElement("span");
+    sub.textContent = t.all ? " 오늘 강화 완료!" + (combo >= 2 ? " 연속 " + combo + "일 콤보 중" : "") :
+      " 곡·발성·집중 목표를 다 채우면 +" + (p + 1) + (nextTier && nextTier === p + 1 ? "! 빛이 더 세져요" : "!") + (combo >= 1 ? " 오늘도 채우면 " + (combo + 1) + "일 연속 콤보 보너스!" : "");
+    $("powerTxt").append(head, document.createElement("br"), sub);
+    const tabStat = (id, txt, done) => { const b = $(id); b.querySelector("small").textContent = txt; b.classList.toggle("done", done); };
+    tabStat("tabToday", t.all ? "완주!" : "", t.all);
+    tabStat("tabSong", t.songRaw + "/" + t.songGoal, t.songGoal > 0 && t.songDone >= t.songGoal);
+    tabStat("tabVocal", t.vRaw + "/" + t.vGoal, t.vDone >= t.vGoal);
+    tabStat("tabFocus", t.fMin + "/" + S.focusGoal + "분", t.fMin >= S.focusGoal);
+  }
+
+  // ---------- tabs ----------
+  const TABS = ["today", "song", "vocal", "focus"];
+  let tab = "today";
+  try { const saved = localStorage.getItem("soli-tab"); if (TABS.includes(saved)) tab = saved; } catch (e) {}
+  if (TABS.includes(location.hash.slice(1))) tab = location.hash.slice(1);
+  function showTab(t, scroll) {
+    tab = t;
+    document.querySelectorAll("[data-tab]").forEach((s) => { s.hidden = s.dataset.tab !== t; });
+    document.querySelectorAll(".tabbar button").forEach((b) => b.setAttribute("aria-current", b.dataset.go === t ? "page" : "false"));
+    try { localStorage.setItem("soli-tab", t); } catch (e) {}
+    if (scroll) window.scrollTo(0, 0);
+  }
+  document.addEventListener("click", (e) => { const b = e.target.closest("[data-go]"); if (b) showTab(b.dataset.go, true); });
+  showTab(tab, false);
+  $("eventName").addEventListener("input", (e) => { S.event.name = e.target.value.trim(); save(); renderTop(); renderSongs(); });
+  $("eventDate").addEventListener("change", (e) => { S.event.date = e.target.value; save(); renderAll(false); });
+
+  // ---------- render: songs ----------
+  const pendingDelete = {};
+  function dotsHTML(n, goal) {
+    const max = Math.min(Math.max(goal, n), 20); let h = "";
+    for (let i = 0; i < max; i++) h += '<span class="dot' + (i < n ? " on" : "") + (i >= goal && i < n ? " extra" : "") + '"></span>';
+    return h;
+  }
+  function renderSongs() {
+    const box = $("songs"), k = todayKey(); box.innerHTML = "";
+    const dl = daysLeft(), nm = S.event.name || "대회";
+    S.songs.forEach((s, idx) => {
+      const today = cnt(k, s.id), tot = songTotal(s.id), remain = Math.max(0, s.total - tot);
+      const el = document.createElement("div"); el.className = "song";
+      el.innerHTML =
+        '<div class="song-title"><input type="text" maxlength="30" aria-label="곡 제목"><button class="btn ghost" data-act="del"></button></div>' +
+        '<div class="today-row"><div class="count"><span class="muted">오늘</span><span class="big num"></span><span class="muted">/ <input class="goal-in" type="number" min="1" max="99" data-goal="daily" aria-label="오늘 목표 횟수"> 번</span></div>' +
+        '<div class="row"><button class="btn small" data-act="minus" aria-label="한 번 빼기">−1</button><button class="btn primary" data-act="plus">+1 불렀어요</button></div></div>' +
+        '<div class="dots"></div>' +
+        '<div class="goal-box"><div class="goal-line"><span><span class="nm"></span>까지 <b class="num tot"></b> / <input class="goal-in" type="number" min="1" max="999" data-goal="total" aria-label="대회까지 목표 횟수"> 번</span></div>' +
+        '<div class="bar"><i></i></div><p class="tip"></p></div>';
+      const ti = el.querySelector(".song-title input");
+      ti.value = s.title; ti.placeholder = "곡 " + (idx + 1) + " 제목을 써 주세요";
+      ti.addEventListener("input", () => { s.title = ti.value.trim(); save(); });
+      const del = el.querySelector('[data-act="del"]');
+      del.textContent = pendingDelete[s.id] ? "정말 삭제?" : "삭제";
+      del.classList.toggle("warn", !!pendingDelete[s.id]);
+      del.addEventListener("click", () => {
+        if (pendingDelete[s.id]) { S.songs = S.songs.filter((x) => x.id !== s.id); delete pendingDelete[s.id]; save(); renderAll(false); }
+        else { pendingDelete[s.id] = true; renderSongs(); setTimeout(() => { if (pendingDelete[s.id]) { delete pendingDelete[s.id]; renderSongs(); } }, 3000); }
+      });
+      el.querySelector(".big").textContent = today;
+      el.querySelector('[data-goal="daily"]').value = s.daily;
+      el.querySelector('[data-goal="total"]').value = s.total;
+      el.querySelectorAll(".goal-in").forEach((inp) => inp.addEventListener("change", () => {
+        const v = Math.max(1, Math.min(+inp.max, Math.round(+inp.value || 1)));
+        s[inp.dataset.goal] = v; save(); checkGoals(); renderAll(false);
+      }));
+      el.querySelector(".dots").innerHTML = dotsHTML(today, s.daily);
+      el.querySelector(".nm").textContent = nm;
+      el.querySelector(".tot").textContent = tot;
+      el.querySelector(".bar i").style.width = Math.min(100, s.total ? tot / s.total * 100 : 0) + "%";
+      const tip = el.querySelector(".tip");
+      if (remain === 0) tip.innerHTML = "<strong>목표 달성!</strong> 이제는 한 번 한 번 더 예쁘게 불러 봐요.";
+      else if (dl === null) tip.textContent = "대회 날짜를 정하면 하루에 몇 번 하면 되는지 알려 줘요.";
+      else if (dl <= 0) tip.textContent = "남은 " + remain + "번은 다음 무대를 위해 이어서 해요.";
+      else {
+        const perDay = Math.ceil(remain / dl);
+        tip.innerHTML = "남은 <strong>" + remain + "번</strong> · " + nm + " 전까지 " + dl + "일 · 하루 <strong>" + perDay + "번</strong>씩이면 돼요" + (perDay > s.daily ? " (오늘 목표를 " + perDay + "번으로 올려 볼까요?)" : "");
+      }
+      el.querySelector('[data-act="plus"]').addEventListener("click", (e) => bump(s.id, 1, 5, e.currentTarget));
+      el.querySelector('[data-act="minus"]').addEventListener("click", () => bump(s.id, -1, 5));
+      box.appendChild(el);
+    });
+    if (!S.songs.length) box.innerHTML = '<p class="muted">아래 버튼으로 연습할 곡을 추가해요.</p>';
+  }
+  $("addSong").addEventListener("click", () => {
+    const id = "song" + Date.now();
+    S.songs.push({ id, title: "", daily: 5, total: 30 }); save(); renderSongs();
+    const inputs = document.querySelectorAll("#songs .song-title input"); inputs[inputs.length - 1].focus();
+  });
+
+  // ---------- render: vocals ----------
+  let AC = null, playing = null;
+  const ac = () => (AC = AC || new (window.AudioContext || window.webkitAudioContext)());
+  function tone(freq, t, dur) {
+    const a = ac(), o = a.createOscillator(), g = a.createGain();
+    o.type = "triangle"; o.frequency.value = freq;
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.3, t + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(g).connect(a.destination); o.start(t); o.stop(t + dur + 0.05);
+  }
+  function playPattern(v, chips, btn) {
+    if (playing) return;
+    const a = ac(); if (a.state === "suspended") a.resume();
+    const step = 0.5, t0 = a.currentTime + 0.05;
+    v.notes.forEach((n, i) => {
+      tone(FREQ[n], t0 + i * step, step * 0.95);
+      setTimeout(() => { chips.forEach((c) => c.classList.remove("hit")); chips[i].classList.add("hit"); }, i * step * 1000 + 50);
+    });
+    btn.disabled = true; mascot.classList.add("singing");
+    say(v.notes.join("-") + " 잘 듣고 따라 해 봐!", "sing");
+    playing = setTimeout(() => { chips.forEach((c) => c.classList.remove("hit")); btn.disabled = false; mascot.classList.toggle("singing", !!fInt); playing = null; }, v.notes.length * step * 1000 + 300);
+  }
+  function renderVocals() {
+    const box = $("vocals"), k = todayKey(); box.innerHTML = "";
+    VOCALS.forEach((v) => {
+      const n = cnt(k, v.id), goal = S.vocalGoal[v.id];
+      const el = document.createElement("div"); el.className = "ex";
+      el.innerHTML = '<div class="card-head"><h3></h3><span class="muted num">오늘 <b class="cnt"></b> / <input class="goal-in" type="number" min="1" max="50" aria-label="오늘 목표 횟수"> 번</span></div>' +
+        '<p class="tip"></p><div class="notes"></div><div class="dots"></div>' +
+        '<div class="row"><button class="btn" data-act="play">▶ 음 들려주기</button><span style="flex:1"></span><button class="btn small" data-act="minus" aria-label="한 번 빼기">−1</button><button class="btn mint" data-act="plus">+1 했어요</button></div>';
+      el.querySelector("h3").textContent = v.title;
+      el.querySelector(".tip").textContent = v.hint;
+      el.querySelector(".cnt").textContent = n;
+      const gi = el.querySelector(".goal-in"); gi.value = goal;
+      gi.addEventListener("change", () => { S.vocalGoal[v.id] = Math.max(1, Math.min(50, Math.round(+gi.value || 1))); save(); checkGoals(); renderAll(false); });
+      const notes = el.querySelector(".notes");
+      const chips = v.notes.map((nt, i) => {
+        const c = document.createElement("span"); c.className = "note";
+        c.innerHTML = "<b></b><small></small>"; c.querySelector("b").textContent = nt; c.querySelector("small").textContent = v.sylls[i] || " ";
+        notes.appendChild(c); return c;
+      });
+      el.querySelector(".dots").innerHTML = dotsHTML(n, goal);
+      el.querySelector('[data-act="play"]').addEventListener("click", (e) => playPattern(v, chips, e.currentTarget));
+      el.querySelector('[data-act="plus"]').addEventListener("click", (e) => bump(v.id, 1, 3, e.currentTarget));
+      el.querySelector('[data-act="minus"]').addEventListener("click", () => bump(v.id, -1, 3));
+      box.appendChild(el);
+    });
+  }
+
+  // ---------- focus timer ----------
+  let fInt = null, wake = null, sessionSec = 0;
+  const fmt = (s) => (s >= 3600 ? Math.floor(s / 3600) + ":" : "") + pad(Math.floor(s / 60) % 60) + ":" + pad(s % 60);
+  function renderFocus() {
+    const sec = peek(todayKey()).sec || 0;
+    $("clock").textContent = fmt(sec);
+    if (document.activeElement !== $("focusGoal")) $("focusGoal").value = S.focusGoal;
+    $("focusBar").style.width = Math.min(100, sec / (S.focusGoal * 60) * 100) + "%";
+    $("focusGo").textContent = fInt ? "잠깐 멈춤" : "집중 시작";
+    $("focusBox").classList.toggle("focus-on", !!fInt);
+    $("tabFocus").classList.toggle("live", !!fInt);
+    if (fInt) $("tabFocus").querySelector("small").textContent = fmt(sec);
+    const left = Math.max(0, S.focusGoal * 60 - sec);
+    $("focusSub").textContent = fInt ? "이번에 " + Math.floor(sessionSec / 60) + "분 " + (sessionSec % 60) + "초째 집중 중" :
+      left > 0 ? "오늘 집중한 시간 · 목표까지 " + Math.ceil(left / 60) + "분" : "오늘 목표 시간 달성!";
+    mascot.classList.toggle("singing", !!fInt || !!playing);
+  }
+  function stopFocus() { clearInterval(fInt); fInt = null; if (wake) { wake.release().catch(() => {}); wake = null; } save(); }
+  $("focusGo").addEventListener("click", async () => {
+    if (fInt) { stopFocus(); say(Math.floor(sessionSec / 60) + "분 집중했어! 물 한 모금 마시고 쉬자.", "happy"); renderAll(false); return; }
+    sessionSec = 0;
+    try { wake = await navigator.wakeLock.request("screen"); } catch (e) {}
+    say("집중 시작! 나도 옆에서 조용히 들을게.", "sing");
+    fInt = setInterval(() => {
+      const d = day(todayKey()); d.sec++; sessionSec++;
+      if (sessionSec % 60 === 0) { S.xp++; save(); renderTop(); checkGoals($("clock")); renderWeek(); }
+      renderFocus();
+    }, 1000);
+    renderFocus();
+  });
+  $("focusGoal").addEventListener("change", (e) => { S.focusGoal = Math.max(1, Math.min(180, Math.round(+e.target.value || 1))); save(); checkGoals(); renderAll(false); });
+
+  // ---------- week & medals ----------
+  const BADGES = [
+    ["first", "♪", "첫 연습", () => Object.keys(S.days).some(active)],
+    ["s3", "3", "3일 연속", () => streak() >= 3],
+    ["s7", "7", "7일 연속", () => streak() >= 7],
+    ["full", "★", "하루 목표 완주", () => Object.values(S.days).some((d) => d.full)],
+    ["f60", "60", "집중 60분", () => totalFocusMin() >= 60],
+    ["r50", "50", "노래 50번", () => allReps() >= 50],
+    ["goal", "◎", "대회 목표 달성", () => S.songs.some((s) => songTotal(s.id) >= s.total)],
+    ["lv5", "♛", "Lv.5 달성", () => levelOf(S.xp) >= 4]
+  ];
+  function checkBadges() {
+    BADGES.forEach(([id, , name, test]) => {
+      if (!S.badges.includes(id) && test()) { S.badges.push(id); setTimeout(() => { confetti(50); say("새 메달 받았어: " + name + "!", "happy"); }, 1200); }
+    });
+  }
+  function renderWeek() {
+    const box = $("week"); box.innerHTML = "";
+    const names = ["일", "월", "화", "수", "목", "금", "토"], now = new Date();
+    const sun = new Date(now); sun.setDate(now.getDate() - now.getDay());
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(sun); d.setDate(sun.getDate() + i);
+      const k = keyOf(d), el = document.createElement("div");
+      el.className = "wd" + (k === todayKey() ? " today" : "");
+      const isEvent = k === S.event.date;
+      el.innerHTML = '<span class="stamp' + (isEvent ? " event" : peek(k).full ? " full" : active(k) ? " on" : "") + '">' + (isEvent ? "대회" : "♪") + "</span>" + names[i];
+      box.appendChild(el);
+    }
+    const m = $("medals"); m.innerHTML = "";
+    BADGES.forEach(([id, sym, name]) => {
+      const got = S.badges.includes(id), el = document.createElement("span");
+      el.className = "medal" + (got ? " got" : ""); el.textContent = got ? sym : "?";
+      el.title = name; el.setAttribute("aria-label", name + (got ? " 메달 받음" : " 메달 아직"));
+      m.appendChild(el);
+    });
+    $("medalCount").textContent = "메달 " + S.badges.length + " / " + BADGES.length;
+  }
+
+  // ---------- feedback ----------
+  function floater(txt, el) {
+    const r = el.getBoundingClientRect(), f = document.createElement("div");
+    f.className = "floater"; f.textContent = txt; f.style.left = (r.left + r.width / 2 - 14) + "px"; f.style.top = (r.top - 6) + "px";
+    document.body.appendChild(f); setTimeout(() => f.remove(), 1000);
+  }
+  const reduce = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const cv = $("confetti"), cx = cv.getContext("2d"); let parts = [], raf = null;
+  function confetti(n) {
+    if (reduce) return;
+    cv.width = innerWidth * devicePixelRatio; cv.height = innerHeight * devicePixelRatio;
+    const cs = getComputedStyle(document.documentElement);
+    const cols = ["--sun", "--coral", "--mint"].map((v) => cs.getPropertyValue(v).trim());
+    for (let i = 0; i < n; i++) parts.push({
+      x: innerWidth / 2 + (Math.random() - .5) * 200, y: innerHeight * 0.35,
+      vx: (Math.random() - .5) * 14, vy: -Math.random() * 12 - 4, r: Math.random() * 6.28, vr: (Math.random() - .5) * .3,
+      c: cols[i % 3], note: Math.random() < .35, s: 6 + Math.random() * 8, life: 0
+    });
+    if (!raf) raf = requestAnimationFrame(step);
+  }
+  function step() {
+    cx.setTransform(devicePixelRatio, 0, 0, devicePixelRatio, 0, 0);
+    cx.clearRect(0, 0, innerWidth, innerHeight);
+    parts.forEach((p) => {
+      p.vy += 0.35; p.vx *= 0.99; p.x += p.vx; p.y += p.vy; p.r += p.vr; p.life++;
+      cx.save(); cx.translate(p.x, p.y); cx.rotate(p.r); cx.fillStyle = p.c;
+      if (p.note) { cx.font = (p.s * 2.4) + "px serif"; cx.fillText("♪", -p.s, p.s); } else cx.fillRect(-p.s / 2, -p.s / 4, p.s, p.s / 2);
+      cx.restore();
+    });
+    parts = parts.filter((p) => p.y < innerHeight + 40 && p.life < 240);
+    if (parts.length) raf = requestAnimationFrame(step); else { raf = null; cx.clearRect(0, 0, innerWidth, innerHeight); }
+  }
+
+  // ---------- boot ----------
+  function renderAll() { renderTop(); renderSongs(); renderVocals(); renderFocus(); renderWeek(); }
+  renderAll();
+  (function hello() {
+    const dl = daysLeft(), st = streak(), nm = S.event.name || "대회";
+    if (dl !== null && dl > 0) say("솔리야! " + nm + "까지 " + dl + "일 남았어! " + (st >= 2 ? st + "일째 연속이야, 오늘도 하자!" : "오늘 목표부터 채워 보자!"));
+    else if (dl === 0) say("솔리야, 오늘이 " + nm + " 날이야! 연습한 대로 즐겁게 부르자!");
+    else say("솔리야 안녕! 나는 솔이야. 곡 제목을 쓰고 같이 연습하자!");
+  })();
+  let lastKey = todayKey();
+  if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js').catch(() => {}); }
+  setInterval(() => { if (todayKey() !== lastKey) { lastKey = todayKey(); renderAll(); } }, 60000);
+})();
+</script>
+
+</body>
+</html>
